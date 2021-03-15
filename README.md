@@ -60,14 +60,12 @@ cmake --build build
 ### Mac OS
 Simply run `build.sh macos` from `apple` directory in the repository root. This script will install Homebrew and all necessary dependencies and build project. To build debug configuration pass `-t Debug` option to `build.sh`.
 
-**Note:** You should install Xcode before trying to build project using `build.sh` script. Also do not forget to pass `-c` option to `build.sh` if you build Mac OS version of the Sourcehold after iOS version.
-
 ### iOS
-Currently you can not build for iOS devices. Only iOS simulator is supported. To build Sourcehold for the iOS simulator run `build.sh ios-simulator` from `apple` directory in the repository root. Script will install Homebrew and all necessary tools. Also it will compile and install SDL2 and FFmpeg libraries to `thirdparty/ios` directory in the repository root. To build debug configuration pass `-t Debug` option to `build.sh`. 
+To build Sourcehold for a iOS device or simulator run `build.sh ios-device -d YOUR_DEVELOPMENT_TEAM_ID` or `build.sh ios-simulator` respectively  from `apple` directory in the repository root. Script will install Homebrew and all necessary tools. Also it will compile and install SDL2 and FFmpeg libraries to `thirdparty/ios` directory in the repository root. To build debug configuration pass `-t Debug` option to `build.sh`. 
 
 After building project with `build.sh` script you may also peform subsequent builds using Xcode. To do that simply open `Stronghold.xcodeproj` from cmake build directory.
 
-**Note:** You should install Xcode before trying to build project using `build.sh` script. Also do not forget to pass `-c` option to `build.sh` if you build iOS version of the Sourcehold after Mac OS version.
+**Note:** You should install Xcode before trying to build project using `build.sh` script. Also do not forget to pass `-c` option to `build.sh` if you switch between iOS device, iOS simulator or Mac OS builds.
 
 ## Running
 Make sure you point Sourcehold to where your game data is located, which you can do using `--path=/your/path` or copy
@@ -91,9 +89,13 @@ data
 ```
 
 ### iOS
+#### Simulator
 You may run iOS version on the simulator using `run-on-ios-simulator.sh` script. You should pass simulator UUID to this script. Run it without parameters to get list of available simulators and their UUIDs. By default `run-on-ios-simulator.sh` tries to run release configuration. Pass `-t Debug` option to alter this behaviour.
 
-You also may just drag'n'drop application bundle (Stronghold.app) to the simulator and run it manually.
+You also may just drag'n'drop application bundle (Stronghold.app) to the simulator and run it manually. Or you can run application using Xcode (open `Stronghold.xcodeproj` from cmake build directory).
+
+#### Device
+Running on a device is supported only via Xcode. Just open `Stronghold.xcodeproj` from cmake build directory, select device from list and hit 'Run'.
 
 **Note:** Currently `data` folder is embedded into application bundle resources, thus you should put it in the main folder of Sourcehold before you build the project.
 

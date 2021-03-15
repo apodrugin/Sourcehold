@@ -14,11 +14,12 @@ IOS_DEPLOYMENT_TARGET=11.0
 # Functions
 
 usage() {
-    echo "usage: $(basename $0) [-ct] <platform>"
+    echo "usage: $(basename $0) [-cdt] <platform>"
     echo "options:"
     echo "-c        \tClean build."
+    echo "-d        \tDevelopment team id. This option is required if you build for iOS device."
     echo "-t        \tBuild type (Debug or Release). Default is Release."
-    echo "<platform>\t'ios', 'ios-simulator' or 'macos'"
+    echo "<platform>\t'ios-device', 'ios-simulator' or 'macos'"
     exit 1
 }
 
@@ -32,7 +33,7 @@ install_dependecies() {
     local CLEAN="$1"
     local PLATFORM="$2"
     
-    if [[ "$PLATFORM" == "ios-simulator" || "$PLATFORM" == "ios" ]] ; then
+    if [[ "$PLATFORM" == "ios-simulator" || "$PLATFORM" == "ios-device" ]] ; then
         local OPTIONS="-d $IOS_DEPLOYMENT_TARGET"
         
         if [[ $CLEAN -eq 1 ]] ; then
@@ -61,23 +62,38 @@ build() {
     local CLEAN="$1"
     local BUILD_TYPE="$2"
     local PLATFORM="$3"
-    local CLEAN_OPTION=
+    local DEVELOPMENT_TEAM="$4"
+    local ADDITIONAL_OPTIONS=
     
     if [[ $CLEAN -eq 1 ]] ; then
-        CLEAN_OPTION="--clean-first"
+        ADDITIONAL_OPTIONS="--clean-first"
     fi
     
-    if [[ "$PLATFORM" == "ios-simulator" ]] ; then
+    if [[ "$PLATFORM" == "ios-simulator" || "$PLATFORM" == "ios-device" ]] ; then
+        local ARCH=
+        local SDK=
+    
+        if [[ "$PLATFORM" == "ios-simulator" ]]; then
+            ARCH="x86_64"
+            SDK="iphonesimulator"
+        else
+            ARCH="arm64"
+            SDK="iphoneos"
+        fi
+        
         cmake "$CMAKE_WORKING_DIR_PATH" -B "$BUILD_DIR_PATH" -GXcode \
             -DCMAKE_SYSTEM_NAME=iOS \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=$IOS_DEPLOYMENT_TARGET \
-            -DCMAKE_OSX_ARCHITECTURES="x86_64"
-            -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
-        cmake --build "$BUILD_DIR_PATH" --config $BUILD_TYPE $CLEAN_OPTION -- -sdk iphonesimulator
+            -DCMAKE_OSX_ARCHITECTURES=$ARCH \
+            -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+            -DIOS_DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM"
+            
+        ADDITIONAL_OPTIONS="$ADDITIONAL_OPTIONS -- -sdk $SDK -allowProvisioningUpdates"
     else
         cmake "$CMAKE_WORKING_DIR_PATH" -B "$BUILD_DIR_PATH"
-        cmake --build "$BUILD_DIR_PATH" --config $BUILD_TYPE $CLEAN_OPTION
     fi
+    
+    cmake --build "$BUILD_DIR_PATH" --config $BUILD_TYPE $ADDITIONAL_OPTIONS
 }
 
 
@@ -85,12 +101,16 @@ build() {
 
 CLEAN=0
 BUILD_TYPE="Release"
+DEVELOPMENT_TEAM=
 
-while getopts "ct:" opt
+while getopts "cd:t:" opt
 do
     case $opt in
     c)
         CLEAN=1
+        ;;
+    d)
+        DEVELOPMENT_TEAM="$OPTARG"
         ;;
     t)
         BUILD_TYPE="$OPTARG"
@@ -109,12 +129,12 @@ if [[ -z "$PLATFORM" ]] ; then
     usage
 fi
 
-if [[ "$PLATFORM" == "ios" ]] ; then
-    echo "Build for device is not currently supported."
-    exit 1
+if [[ "$PLATFORM" == "ios-device" && -z "$DEVELOPMENT_TEAM" ]]; then
+    echo "You should specify development team when building for iOS device."
+    usage
 fi
 
-if [[ "$PLATFORM" != "ios" && "$PLATFORM" != "ios-simulator" && "$PLATFORM" != "macos" ]] ; then
+if [[ "$PLATFORM" != "ios-device" && "$PLATFORM" != "ios-simulator" && "$PLATFORM" != "macos" ]] ; then
     usage
 fi
 
@@ -130,4 +150,4 @@ fi
 "$SCRIPT_PATH/install-tools.sh"
 install_dependecies $CLEAN "$PLATFORM"
 update_submodules
-build $CLEAN "$BUILD_TYPE" "$PLATFORM"
+build $CLEAN "$BUILD_TYPE" "$PLATFORM" "$DEVELOPMENT_TEAM"
