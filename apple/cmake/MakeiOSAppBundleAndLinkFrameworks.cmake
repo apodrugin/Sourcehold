@@ -10,7 +10,7 @@ set(APP_RESOURCES
   ${RESOURCES_DIR_PATH}/Base.lproj/LaunchScreen.storyboard
   ${RESOURCES_DIR_PATH}/Assets.xcassets
 )
- 
+
 if(EXISTS ${DATA_DIR_PATH})
   set(APP_RESOURCES ${APP_RESOURCES} ${DATA_DIR_PATH})
   source_group("Resources" FILES ${DATA_DIR_PATH})
@@ -26,7 +26,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   MACOSX_BUNDLE TRUE
   MACOSX_BUNDLE_INFO_PLIST ${TEMPLATE_INFO_PLIST_PATH}
   XCODE_ATTRIBUTE_PRODUCT_NAME ${PROJECT_NAME}
-  XCODE_ATTRIBUTE_DEVELOPMENT_TEAM ${IOS_DEVELOPMENT_TEAM}
   XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH NO
   XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER ${BUNDLE_IDENTIFIER}
   # Specify that app is universal and can be run on iPhone (1) and iPad (2). By default cmake set this value to 1
@@ -35,6 +34,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME AppIcon
   RESOURCE "${APP_RESOURCES}"
 )
+
+if(DEFINED IOS_DEVELOPMENT_TEAM AND NOT ${IOS_DEVELOPMENT_TEAM} STREQUAL "")
+  set_target_properties(${PROJECT_NAME} PROPERTIES
+      XCODE_ATTRIBUTE_DEVELOPMENT_TEAM ${IOS_DEVELOPMENT_TEAM}
+  )
+endif() # If IOS_DEVELOPMENT_TEAM is defined
   
 # Update app Info.plist with project name and version which are set using cmake
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
