@@ -21,7 +21,7 @@
 #include "GUI/NarrScreen.h"
 #include "GUI/MainMenu.h"
 
-#if SOURCEHOLD_IOS
+#ifdef SOURCEHOLD_IOS
 #include "Common/SHPathUtils.h"
 #endif
 
@@ -115,6 +115,7 @@ static const int resolutions[][2] = {
     { 1024, 768 },
     { 1280, 720 },
     { 1280, 1024 },
+    { 1360, 768 },
     { 1366, 768 },
     { 1440, 900 },
     { 1600, 900 },
